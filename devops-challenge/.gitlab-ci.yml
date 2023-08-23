@@ -1,0 +1,194 @@
+variables:
+  IMAGE_NAME: thisisadam1123/devops-assignment-ajaber1
+  
+
+stages:
+  - test
+  - build
+  - deploy
+  # - deploy-cluster
+  # - deploy-aplication
+  # - clean-application
+  # - clean-cluster
+
+
+
+
+# test_services:
+#   stage: test
+#   image: node:lts
+#   script:
+#     - npm install --global mocha
+
+#     # Define the list of services and their corresponding test files
+#     - services=("multiplication" "remainder" "division" "addition" "subtraction")
+#     - test_files=("multiplication.js" "remainder.test.js" "division.js" "addition.js" "subtration.test.js")
+
+#     # Iterate over the services and run the test
+#     - |
+#       for i in ${!services[@]}; do
+#         service=${services[$i]}
+#         test_file=${test_files[$i]}
+
+#         echo "Running tests for service: $service"
+#         cd services/$service/test
+#         mocha $test_file
+#         echo "Current directory: $(pwd)"
+#         cd ../../..
+#         echo "Current directory after ../../..: $(pwd)"
+#       done
+
+
+
+build_images:
+  stage: build
+  image: docker:stable
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u $REGISTRY_USER -p $REGISTRY_PASS
+  script:
+    - |
+      services="remainder
+      division
+      multiplication
+      addition
+      subtraction
+      calculator
+      client"
+      for service in $services; do
+        cd "services/$service"
+        docker build -t "$IMAGE_NAME-$service:$CI_COMMIT_SHORT_SHA" -t "$IMAGE_NAME-$service:latest" .
+        docker push "$IMAGE_NAME-$service:$CI_COMMIT_SHORT_SHA"
+        docker push "$IMAGE_NAME-$service:latest"
+        cd -
+      done
+
+
+
+# deploy:
+#   stage: deploy
+#   variables:
+#     KUBECONFIG: 
+#       ${{ if eq $CI_COMMIT_REF_NAME "master" }}:
+#         - $KUBECONFIG_PROD
+#       ${{ if eq $CI_COMMIT_REF_NAME "develop" }}:
+#         - $KUBECONFIG_DEV
+#   script:
+#     - echo $KUBECONFIG | base64 -d > kubeconfig.yml
+#     - kubectl get nodes
+#     #- kubectl --kubeconfig=kubeconfig.yml set image deployment/<deployment-name> <container-name>=<registry>/<project>:<tag>
+#     - kubectl --kubeconfig=kubeconfig.yml set image deployment/remainder remainder=thisisadam1123/devops-assignment-ajaber1-remainder:$CI_COMMIT_SHORT_SHA
+
+
+deploy:
+  stage: deploy
+  image: alpine
+  before_script:
+    - apk update  && apk add --no-cache curl
+    - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+    - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
+    - apk add --no-cache curl jq python3 py3-pip
+    - pip install awscli
+    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+    - aws configure set region $AWS_DEFAULT_REGION   
+
+  variables:
+    KUBECONFIG: $KUBECONFIG_PROD
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "develop"'
+      variables:
+        KUBECONFIG: $KUBECONFIG_DEV
+    - if: '$CI_COMMIT_REF_NAME == "master"'
+      variables:
+        KUBECONFIG: $KUBECONFIG_PROD
+  script:
+
+    - echo $KUBECONFIG | base64 -d > kubeconfig.yml
+    - kubectl --kubeconfig=kubeconfig.yml get nodes 
+    - |
+      services="multiplication remainder division addition subtraction client calculator"
+      for service in $services; do
+        kubectl --kubeconfig=kubeconfig.yml -n calculator-application set image deployment/"$service" "$service=thisisadam1123/devops-assignment-ajaber1-$service:$CI_COMMIT_SHORT_SHA"
+      done
+
+    #- kubectl --kubeconfig=kubeconfig.yml set image deployment/<deployment-name> <container-name>=<registry>/<project>:<tag>
+    #- kubectl --kubeconfig=kubeconfig.yml -n calculator-application set image deployment/remainder remainder=thisisadam1123/devops-assignment-ajaber1-remainder:$CI_COMMIT_SHORT_SHA
+
+
+
+ 
+
+
+# example to show how to deploy a new cluster and application using terraform
+
+# deploy_cluster: 
+#   stage: deploy-cluster
+#   image: alpine
+#   before_script:
+#     - wget https://releases.hashicorp.com/terraform/1.3.9/terraform_1.3.9_linux_amd64.zip
+#     - unzip terraform_1.3.9_linux_amd64.zip -d /usr/local/bin/
+#     - chmod +x /usr/local/bin/terraform
+#   script:
+#     - echo "deploying cluster"
+#     - cd terraform/eks-cluster
+#     - terraform init
+#     - terraform plan
+#     - terraform apply -auto-approve
+#     - cd $CI_PROJECT_DIR
+#   rules:
+#     - if: '$CI_COMMIT_REF_NAME == "master"'
+
+
+# deploy_aplication:
+#   stage: deploy-aplication
+#   image: alpine
+#   before_script:
+#     - wget https://releases.hashicorp.com/terraform/1.3.9/terraform_1.3.9_linux_amd64.zip
+#     - unzip terraform_1.3.9_linux_amd64.zip -d /usr/local/bin/
+#     - chmod +x /usr/local/bin/terraform
+#   script:
+#     - echo "deploying application"
+#     - cd terraform/application
+#     - terraform init
+#     - terraform plan
+#     - terraform apply -auto-approve
+#     - cd $CI_PROJECT_DIR
+#   rules:
+#     - if: '$CI_COMMIT_REF_NAME == "master"'
+
+
+# clean_application:
+#   stage: clean-application
+#   image: alpine
+#   before_script:
+#     - wget https://releases.hashicorp.com/terraform/1.3.9/terraform_1.3.9_linux_amd64.zip
+#     - unzip terraform_1.3.9_linux_amd64.zip -d /usr/local/bin/
+#     - chmod +x /usr/local/bin/terraform
+#   script:
+#    - cd terraform/application
+#    - terraform init
+#    - terraform destroy -auto-approve
+#    - cd $CI_PROJECT_DIR
+#   needs:
+#    - job: deploy_aplication
+
+
+
+# clean_cluster:
+#   stage: clean-cluster
+#   image: alpine
+#   before_script:
+#     - wget https://releases.hashicorp.com/terraform/1.3.9/terraform_1.3.9_linux_amd64.zip
+#     - unzip terraform_1.3.9_linux_amd64.zip -d /usr/local/bin/
+#     - chmod +x /usr/local/bin/terraform
+#   script:
+#    - cd terraform/eks-cluster
+#    - terraform init
+#    - terraform destroy -auto-approve
+#    - cd $CI_PROJECT_DIR
+#   needs:
+#    - job: deploy_cluster
+
+

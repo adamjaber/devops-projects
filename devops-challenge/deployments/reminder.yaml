@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: remainder
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  selector:
+    app: remainder
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: remainder
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: remainder
+  template:
+    metadata:
+      labels:
+        app: remainder
+    spec:
+      containers:
+        - name: remainder
+          imagePullPolicy: Always
+          image: thisisadam1123/devops-assignment-ajaber1-remainder:latest
+          ports:
+            - containerPort: 80
+
+

@@ -1,0 +1,288 @@
+
+# uses the service name as localhost 
+# push images 
+# pull for kubernetes pods
+# 
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: client
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  selector:
+    app: client
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      labels:
+        app: client
+    spec:
+      containers:
+        - name: client
+          imagePullPolicy: Always
+          image: thisisadam1123/devops-assignment-ajaber1-client:1.0
+          ports:
+          - containerPort: 80
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: calculator
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  selector:
+    app: calculator
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      # nodePort: 30001
+  type: NodePort
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calculator
+  labels:
+    app: cloud-engineer-challenge
+spec:   # configuration of deployment
+  replicas: 1
+  selector:   # if there are more replicas u can manage them using selector by this deployment
+    matchLabels:
+      app: calculator
+  template:
+    metadata:
+      labels:
+        app: calculator
+    spec:  # how this pod specification
+      containers:
+        - name: calculator
+          imagePullPolicy: Always
+          image: thisisadam1123/devops-assignment-ajaber1-calculator:1.0
+          ports:
+            - containerPort: 80
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: addition
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  selector:
+    app: addition
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  # type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: addition
+  labels:
+    app: cloud-engineer-challenge
+spec:   # configuration of deployment
+  replicas: 1
+  selector:   # if there are more replicas u can manage them using selector by this deployment
+    matchLabels:
+      app: addition
+  template:
+    metadata:
+      labels:
+        app: addition
+    spec:  # how this pod specification
+      containers:
+        - name: addition
+          imagePullPolicy: Always
+          image: thisisadam1123/devops-assignment-ajaber1-addition:1.0
+          ports:
+            - containerPort: 80
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: division
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  selector:
+    app: division
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: division
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: division
+  template:
+    metadata:
+      labels:
+        app: division
+    spec:
+      containers:
+        - name: division
+          imagePullPolicy: Always
+          image: thisisadam1123/devops-assignment-ajaber1-division:1.0
+          ports:
+            - containerPort: 80
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: multiplication
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  selector:
+    app: multiplication
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multiplication
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: multiplication
+  template:
+    metadata:
+      labels:
+        app: multiplication
+    spec:
+      containers:
+        - name: multiplication
+          imagePullPolicy: Always
+          image: thisisadam1123/devops-assignment-ajaber1-multiplication:1.0
+          ports:
+            - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: remainder
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  selector:
+    app: remainder
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: remainder
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: remainder
+  template:
+    metadata:
+      labels:
+        app: remainder
+    spec:
+      containers:
+        - name: remainder
+          imagePullPolicy: Always
+          image: thisisadam1123/devops-assignment-ajaber1-remainder:1.0
+          ports:
+            - containerPort: 80
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: subtraction
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  selector:
+    app: subtraction
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subtraction
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: subtraction
+  template:
+    metadata:
+      labels:
+        app: subtraction
+    spec:
+      containers:
+        - name: subtraction
+          imagePullPolicy: Always
+          image: thisisadam1123/devops-assignment-ajaber1-subtraction:1.0
+          ports:
+            - containerPort: 80
+
+
+
+
+
+

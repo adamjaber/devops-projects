@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: calculator
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  selector:
+    app: calculator
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calculator
+  labels:
+    app: cloud-engineer-challenge
+spec:   # configuration of deployment
+  replicas: 1
+  selector:   # if there are more replicas u can manage them using selector by this deployment
+    matchLabels:
+      app: calculator
+  template:
+    metadata:
+      labels:
+        app: calculator
+    spec:  # how this pod specification
+      containers:
+        - name: calculator
+          imagePullPolicy: Always
+          image: thisisadam1123/devops-assignment-ajaber1-calculator:latest
+          ports:
+            - containerPort: 80

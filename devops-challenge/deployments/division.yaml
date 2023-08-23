@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: division
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  selector:
+    app: division
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: division
+  labels:
+    app: cloud-engineer-challenge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: division
+  template:
+    metadata:
+      labels:
+        app: division
+    spec:
+      containers:
+        - name: division
+          imagePullPolicy: Always
+          image: thisisadam1123/devops-assignment-ajaber1-division:latest
+          ports:
+            - containerPort: 80
+
